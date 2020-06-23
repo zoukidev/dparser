@@ -1,32 +1,49 @@
 import FileReader from '../utils/filereader';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as pug from 'pug';
+import { Buffer } from 'buffer';
 
 export default class Extractor {
-    static browsePackageData(folderPath: string) {
-        fs.readdir(folderPath, (err, files: string[]) => {
-            if (err) console.log(err);
-            if (FileReader.checkFolder(folderPath)) {
-                files.map((file: string) => {
-                    if (FileReader.checkFolder(path.join(folderPath, file))) {
-                        Extractor.browsePackageData(path.join(folderPath, file));
-                    } else {
-                        Extractor.extractFile(path.join(folderPath, file))
-                    }
+    static browsePackageData(dirPath: string) {
+        // console.log(dirPath, FileReader.checkType(dirPath));
+
+        switch(FileReader.checkType(dirPath)) {
+            case 'file':
+                Extractor.extractFile(dirPath);
+                break;
+            case 'folder':
+                fs.readdir(dirPath, (err, files: string[]) => {
+                    if (err) console.log(err);
+                    files.map((file: string) => {
+                        Extractor.browsePackageData(path.join(dirPath, file));
+                    });
                 });
-            }
-        });
+                break;
+        }
     }
 
     static extractFile(filePatch: string) {
-        if (FileReader.checkFolder(filePatch)) {
-            Extractor.browsePackageData(filePatch);
-        } else {
-            fs.readFile(filePatch, (err, fileContent: any) => {
-                if (err) console.log(err);
-                console.log(filePatch);
-                // console.log(fileContent);
-            });
-        }
+        fs.readFile(filePatch, (err, fileContent: any) => {
+            if (err) console.log(err);
+            // console.log(filePatch, `Buffer[${fileContent.length}]`);
+
+            let fileFullPath = (filePatch).substr(0, filePatch.length-3).split('\\');
+            fileFullPath = fileFullPath.slice(4);
+            let fileData = {
+                class: fileFullPath[fileFullPath.length],
+                filePatch: filePatch,
+                fileFullPath: fileFullPath,
+                buffer: {
+                    // content: fileContent,
+                    length: fileContent.length
+                }
+            };
+
+            const compiledFunction = pug.compileFile(path.join(__dirname, 'templates/test.pug'));
+            console.log(compiledFunction({
+                name: 'Timothy'
+            }));
+        });
     }
 }
