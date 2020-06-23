@@ -31,7 +31,7 @@ export default class Extractor {
             let fileFullPath = (filePatch).substr(0, filePatch.length-3).split('\\');
             fileFullPath = fileFullPath.slice(4);
             let fileData = {
-                class: fileFullPath[fileFullPath.length],
+                class: fileFullPath[fileFullPath.length-1],
                 filePatch: filePatch,
                 fileFullPath: fileFullPath,
                 buffer: {
@@ -42,7 +42,7 @@ export default class Extractor {
 
             const compiledFunction = pug.compileFile(path.join(__dirname, 'templates/test.pug'));
             console.log(compiledFunction({
-                name: 'Timothy'
+                name: fileData.class
             }));
         });
     }
